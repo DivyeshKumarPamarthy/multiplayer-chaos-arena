@@ -179,11 +179,6 @@ const draw = () => {
       ctx.font = 'bold 12px Inter';
       ctx.fillText(`Lives: ${p.lives}`, p.x, p.y - 30);
       
-      if (p.weapon !== 'unarmed') {
-         ctx.fillStyle = '#a78bfa';
-         ctx.font = '11px Inter';
-         ctx.fillText(p.weapon.toUpperCase(), p.x, p.y + 35);
-      }
       
       if (p.id === props.socket.id) {
         ctx.beginPath();

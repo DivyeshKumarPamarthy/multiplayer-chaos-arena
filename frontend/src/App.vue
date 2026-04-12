@@ -28,6 +28,17 @@
         </div>
         <button class="btn leave-btn" @click="leaveRoom">Leave</button>
       </div>
+
+      <div v-if="gameState.state === 'PLAYING'" class="player-hud">
+         <div class="hud-username">
+            <span class="hud-label">Player:</span>
+            <span class="hud-value">{{ gameState.players[socket.id]?.username }}</span>
+         </div>
+         <div class="hud-weapon">
+            <span class="hud-label">Weapon:</span>
+            <span class="hud-value" :class="gameState.players[socket.id]?.weapon">{{ gameState.players[socket.id]?.weapon?.toUpperCase() || 'UNARMED' }}</span>
+         </div>
+      </div>
       
       <!-- The Canvas Component -->
       <GameCanvas 
@@ -133,7 +144,7 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
+  margin-bottom: 0.5rem;
 }
 .controls, .countdown, .status {
   display: flex;
@@ -214,4 +225,28 @@ onUnmounted(() => {
   0% { transform: scale(1); }
   100% { transform: scale(1.15); }
 }
+
+.player-hud {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--glass-border);
+}
+.hud-label {
+  color: #94a3b8;
+  margin-right: 0.5rem;
+  font-size: 0.9rem;
+}
+.hud-value {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #f8fafc;
+}
+.hud-value.sword { color: #cbd5e1; }
+.hud-value.gun { color: #ef4444; }
+.hud-value.sniper { color: #10b981; }
 </style>
