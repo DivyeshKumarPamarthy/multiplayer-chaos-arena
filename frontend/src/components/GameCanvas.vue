@@ -37,6 +37,11 @@ const inputState = {
   isAttacking: false
 };
 
+const joystick = {
+   active: false, identifier: null, originX: 0, originY: 0, currentX: 0, currentY: 0, dx: 0, dy: 0
+};
+const isMobile = typeof window !== 'undefined' && ('ontouchstart' in window);
+
 const updateInput = () => {
   if (!props.socket) return;
   props.socket.emit('playerInput', {
@@ -44,7 +49,9 @@ const updateInput = () => {
     down: keys.s || keys.ArrowDown,
     left: keys.a || keys.ArrowLeft,
     right: keys.d || keys.ArrowRight,
-    attack: inputState.isAttacking || keys.Space
+    attack: inputState.isAttacking || keys.Space,
+    joystickDx: joystick.active ? joystick.dx : null,
+    joystickDy: joystick.active ? joystick.dy : null
   });
 };
 
@@ -77,12 +84,67 @@ const handleMouseUp = (e) => {
 };
 
 const handleTouchStart = (e) => {
-  inputState.isAttacking = true;
+  for (let i = 0; i < e.changedTouches.length; i++) {
+     const touch = e.changedTouches[i];
+     // Right half = Joystick (per user request)
+     if (touch.clientX > window.innerWidth / 2) {
+        if (!joystick.active) {
+           joystick.active = true;
+           joystick.identifier = touch.identifier;
+           joystick.originX = touch.clientX;
+           joystick.originY = touch.clientY;
+           joystick.currentX = touch.clientX;
+           joystick.currentY = touch.clientY;
+           joystick.dx = 0; joystick.dy = 0;
+        }
+     } else {
+        // Left half = Attack
+        inputState.isAttacking = true;
+     }
+  }
+  updateInput();
+};
+
+const handleTouchMove = (e) => {
+  for (let i = 0; i < e.changedTouches.length; i++) {
+     const touch = e.changedTouches[i];
+     if (joystick.active && touch.identifier === joystick.identifier) {
+        joystick.currentX = touch.clientX;
+        joystick.currentY = touch.clientY;
+        
+        let dx = touch.clientX - joystick.originX;
+        let dy = touch.clientY - joystick.originY;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const MAX_RADIUS = 40;
+        
+        if (dist > MAX_RADIUS) {
+           dx = (dx / dist) * MAX_RADIUS;
+           dy = (dy / dist) * MAX_RADIUS;
+        }
+        joystick.dx = dx / MAX_RADIUS; // normalize -1 to 1 mathematically
+        joystick.dy = dy / MAX_RADIUS;
+     }
+  }
   updateInput();
 };
 
 const handleTouchEnd = (e) => {
-  inputState.isAttacking = false;
+  for (let i = 0; i < e.changedTouches.length; i++) {
+     const touch = e.changedTouches[i];
+     if (joystick.active && touch.identifier === joystick.identifier) {
+        joystick.active = false;
+        joystick.identifier = null;
+        joystick.dx = 0;
+        joystick.dy = 0;
+     } else {
+        // Did all left touches end?
+        let hasLeft = false;
+        for (let j = 0; j < e.touches.length; j++) {
+           if (e.touches[j].clientX <= window.innerWidth / 2) hasLeft = true;
+        }
+        inputState.isAttacking = hasLeft;
+     }
+  }
   updateInput();
 };
 
@@ -211,18 +273,46 @@ const draw = () => {
     });
   }
 
+  // Draw Virtual Joystick
+  if (isMobile && joystick.active && gameCanvas.value) {
+     const rect = gameCanvas.value.getBoundingClientRect();
+     const scaleX = MAP_SIZE / rect.width;
+     const scaleY = MAP_SIZE / rect.height;
+     
+     const jx = (joystick.originX - rect.left) * scaleX;
+     const jy = (joystick.originY - rect.top) * scaleY;
+     
+     // Base
+     ctx.beginPath();
+     ctx.arc(jx, jy, 40 * scaleX, 0, Math.PI * 2);
+     ctx.fillStyle = 'rgba(255, 255, 255, 0.15)';
+     ctx.fill();
+     ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+     ctx.lineWidth = 2;
+     ctx.stroke();
+
+     // Knob
+     ctx.beginPath();
+     ctx.arc(jx + joystick.dx * 40 * scaleX, jy + joystick.dy * 40 * scaleY, 20 * scaleX, 0, Math.PI * 2);
+     ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+     ctx.fill();
+  }
+
   animationFrameId = requestAnimationFrame(draw);
 };
 
 onMounted(() => {
   window.addEventListener('keydown', handleKeyDown);
   window.addEventListener('keyup', handleKeyUp);
+  // Optional: Global move/end listeners so finger can leave canvas area
+  window.addEventListener('touchmove', handleTouchMove, { passive: false });
   draw();
 });
 
 onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown);
   window.removeEventListener('keyup', handleKeyUp);
+  window.removeEventListener('touchmove', handleTouchMove);
   if (animationFrameId) {
     cancelAnimationFrame(animationFrameId);
   }

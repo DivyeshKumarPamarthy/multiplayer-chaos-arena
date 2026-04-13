@@ -1,4 +1,8 @@
 <template>
+  <div class="portrait-overlay">
+    <h2>Rotate Device 🔄</h2>
+    <p>Please rotate your phone to landscape mode to play!</p>
+  </div>
   <div class="app-container">
     <Lobby 
       v-if="!gameState" 
@@ -131,6 +135,31 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+.portrait-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100vw; height: 100vh;
+  background: #0f172a;
+  color: white;
+  z-index: 9999;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 2rem;
+}
+.portrait-overlay h2 { font-size: 2rem; margin-bottom: 1rem; color: #f43f5e; }
+.portrait-overlay p { font-size: 1.2rem; opacity: 0.8; }
+
+@media screen and (orientation: portrait) and (max-width: 900px) {
+  .portrait-overlay {
+    display: flex;
+  }
+  .app-container {
+    display: none;
+  }
+}
+
 .game-panel {
   display: flex;
   flex-direction: column;

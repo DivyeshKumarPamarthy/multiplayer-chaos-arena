@@ -112,10 +112,16 @@ class GameRoom {
 
       let dx = 0;
       let dy = 0;
-      if (p.input.left) dx -= 1;
-      if (p.input.right) dx += 1;
-      if (p.input.up) dy -= 1;
-      if (p.input.down) dy += 1;
+      
+      if (p.input.joystickDx !== undefined && p.input.joystickDx !== null) {
+         dx = p.input.joystickDx;
+         dy = p.input.joystickDy;
+      } else {
+         if (p.input.left) dx -= 1;
+         if (p.input.right) dx += 1;
+         if (p.input.up) dy -= 1;
+         if (p.input.down) dy += 1;
+      }
 
       if (dx !== 0 || dy !== 0) {
          targetAngle = Math.atan2(dy, dx);
