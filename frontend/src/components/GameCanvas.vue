@@ -106,12 +106,16 @@ const handleTouchStart = (e) => {
 };
 
 const handleTouchMove = (e) => {
+  // Prevent browser scrolling and swipe-navigation
+  if (e.cancelable) e.preventDefault();
+  
   for (let i = 0; i < e.changedTouches.length; i++) {
      const touch = e.changedTouches[i];
      if (joystick.active && touch.identifier === joystick.identifier) {
         joystick.currentX = touch.clientX;
         joystick.currentY = touch.clientY;
         
+        // Ensure distance is tracked explicitly to stop 0,0 jitter
         let dx = touch.clientX - joystick.originX;
         let dy = touch.clientY - joystick.originY;
         const dist = Math.sqrt(dx*dx + dy*dy);
@@ -121,8 +125,15 @@ const handleTouchMove = (e) => {
            dx = (dx / dist) * MAX_RADIUS;
            dy = (dy / dist) * MAX_RADIUS;
         }
-        joystick.dx = dx / MAX_RADIUS; // normalize -1 to 1 mathematically
-        joystick.dy = dy / MAX_RADIUS;
+        
+        // Prevent snapping to exactly 0 rotation if pulled slightly 
+        if (dist > 5) {
+            joystick.dx = dx / MAX_RADIUS;
+            joystick.dy = dy / MAX_RADIUS;
+        } else {
+            joystick.dx = 0;
+            joystick.dy = 0;
+        }
      }
   }
   updateInput();
@@ -140,12 +151,18 @@ const handleTouchEnd = (e) => {
         // Did all left touches end?
         let hasLeft = false;
         for (let j = 0; j < e.touches.length; j++) {
-           if (e.touches[j].clientX <= window.innerWidth / 2) hasLeft = true;
+           if (e.touches[j].clientX <= window.innerWidth / 2 && e.touches[j].identifier !== joystick.identifier) {
+               hasLeft = true;
+           }
         }
         inputState.isAttacking = hasLeft;
      }
   }
   updateInput();
+};
+
+const handleTouchCancel = (e) => {
+  handleTouchEnd(e);
 };
 
 const draw = () => {
@@ -306,6 +323,8 @@ onMounted(() => {
   window.addEventListener('keyup', handleKeyUp);
   // Optional: Global move/end listeners so finger can leave canvas area
   window.addEventListener('touchmove', handleTouchMove, { passive: false });
+  window.addEventListener('touchcancel', handleTouchCancel);
+  window.addEventListener('touchend', handleTouchEnd);
   draw();
 });
 
@@ -313,6 +332,8 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeyDown);
   window.removeEventListener('keyup', handleKeyUp);
   window.removeEventListener('touchmove', handleTouchMove);
+  window.removeEventListener('touchcancel', handleTouchCancel);
+  window.removeEventListener('touchend', handleTouchEnd);
   if (animationFrameId) {
     cancelAnimationFrame(animationFrameId);
   }
@@ -325,16 +346,21 @@ onUnmounted(() => {
   overflow: hidden;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
   background: #0f172a;
-  max-width: 100%;
-  aspect-ratio: 1 / 1;
+  
+  /* Fix aspect ratio scaling for landscape phones! */
+  width: 100%;
+  height: 65vh; 
+  max-width: 800px;
+  max-height: 800px;
+  margin: 0 auto;
   position: relative;
-  touch-action: none; /* Helps prevent mobile scrolling when tapping */
+  touch-action: none; /* Prevents mobile scrolling when tapping */
 }
 
 canvas {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: contain; /* Automatically perfectly scales the 800x800 square into the window! */
   display: block;
 }
 </style>
