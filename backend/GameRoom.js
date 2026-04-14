@@ -273,7 +273,7 @@ class GameRoom {
                 y: p.y + Math.sin(angle) * (PLAYER_RADIUS + 10),
                 vx: Math.cos(angle) * (speed + 8),
                 vy: Math.sin(angle) * (speed + 8),
-                radius: 10,
+                radius: 14,
                 life: 90 
              });
           } else if (p.weapon === 'machine_gun') {
@@ -287,7 +287,7 @@ class GameRoom {
                   y: p.y + Math.sin(a) * (PLAYER_RADIUS + 10),
                   vx: Math.cos(a) * (speed + 12),
                   vy: Math.sin(a) * (speed + 12),
-                  radius: 6,
+                  radius: 10,
                   life: 60 
                });
              });
@@ -300,7 +300,7 @@ class GameRoom {
                 y: p.y + Math.sin(angle) * (PLAYER_RADIUS + 10),
                 vx: Math.cos(angle) * 25,
                 vy: Math.sin(angle) * 25,
-                radius: 4,
+                radius: 8,
                 life: 60 
              });
           }
