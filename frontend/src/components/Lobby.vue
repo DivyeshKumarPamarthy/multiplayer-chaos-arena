@@ -62,6 +62,8 @@ const joinRoom = () => {
 .lobby-panel {
   max-width: 400px;
   width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
   text-align: center;
 }
 

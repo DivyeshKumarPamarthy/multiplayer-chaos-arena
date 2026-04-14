@@ -164,16 +164,21 @@ onUnmounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 900px;
-  width: 90%;
-  aspect-ratio: auto;
+  max-width: 100vw;
+  width: 100%;
+  height: 100vh;
+  padding: 0.5rem;
 }
 .game-header {
-  width: 100%;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--glass-border);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+  width: 100%;
 }
 .controls, .countdown, .status {
   display: flex;
@@ -259,23 +264,24 @@ onUnmounted(() => {
   width: 100%;
   display: flex;
   justify-content: space-between;
-  padding: 0.5rem 1rem;
+  padding: 0.25rem 0.5rem;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
   border: 1px solid var(--glass-border);
 }
 .hud-label {
   color: #94a3b8;
-  margin-right: 0.5rem;
-  font-size: 0.9rem;
+  margin-right: 0.25rem;
+  font-size: 0.85rem;
 }
 .hud-value {
   font-weight: bold;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #f8fafc;
 }
 .hud-value.sword { color: #cbd5e1; }
 .hud-value.gun { color: #ef4444; }
 .hud-value.sniper { color: #10b981; }
+.hud-value.machine_gun { color: #f97316; }
 </style>

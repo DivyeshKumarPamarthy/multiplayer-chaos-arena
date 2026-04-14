@@ -230,7 +230,7 @@ class GameRoom {
           const w = this.weapons[i];
           const dist = Math.sqrt(Math.pow(w.x - p.x, 2) + Math.pow(w.y - p.y, 2));
           if (dist < PLAYER_RADIUS + 15) { 
-             const available = ['sword', 'gun', 'sniper'];
+             const available = ['sword', 'gun', 'sniper', 'machine_gun'];
              p.weapon = available[Math.floor(Math.random() * available.length)];
              this.weapons.splice(i, 1);
           }
@@ -273,18 +273,33 @@ class GameRoom {
                 y: p.y + Math.sin(angle) * (PLAYER_RADIUS + 10),
                 vx: Math.cos(angle) * (speed + 8),
                 vy: Math.sin(angle) * (speed + 8),
-                radius: 6,
+                radius: 10,
                 life: 90 
              });
+          } else if (p.weapon === 'machine_gun') {
+             p.attackCooldown = 30; // 3-round burst spread
+             const angles = [angle - 0.15, angle, angle + 0.15];
+             angles.forEach(a => {
+               this.projectiles.push({
+                  id: entityIdCounter++,
+                  ownerId: p.id,
+                  x: p.x + Math.cos(a) * (PLAYER_RADIUS + 10),
+                  y: p.y + Math.sin(a) * (PLAYER_RADIUS + 10),
+                  vx: Math.cos(a) * (speed + 12),
+                  vy: Math.sin(a) * (speed + 12),
+                  radius: 6,
+                  life: 60 
+               });
+             });
           } else if (p.weapon === 'sniper') {
-             p.attackCooldown = 50; // slow fire
+             p.attackCooldown = 60; // slow fire
              this.projectiles.push({
                 id: entityIdCounter++,
                 ownerId: p.id,
                 x: p.x + Math.cos(angle) * (PLAYER_RADIUS + 10),
                 y: p.y + Math.sin(angle) * (PLAYER_RADIUS + 10),
-                vx: Math.cos(angle) * 22,
-                vy: Math.sin(angle) * 22,
+                vx: Math.cos(angle) * 25,
+                vy: Math.sin(angle) * 25,
                 radius: 4,
                 life: 60 
              });
